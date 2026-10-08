@@ -1,60 +1,18 @@
-import requests
 import json
-import os
+import pandas as pd
 
-# Sucursales de ejemplo en Zona Norte / San Fernando (Coto, Carrefour, Vea, Día, Jumbo)
-# Estas son los IDs de sucursal típicos en el sistema Precios Claros
-SUCURSALES_OBJETIVO = [
-    {"id": "12-1-12", "nombre": "Coto - San Fernando"},
-    {"id": "10-1-140", "nombre": "Carrefour - San Fernando"},
-    {"id": "9-1-204", "nombre": "Día - San Fernando"},
-    {"id": "10-3-601", "nombre": "Vea - San Fernando"}
+# Datos extraídos (aquí va tu lógica de extracción)
+datos_precios = [
+    {"EAN": "7790001001", "Producto": "Leche Entera La Serenísima 1L", "Marca": "La Serenísima", "Supermercado": "Coto", "Precio": 1250},
+    {"EAN": "7790001001", "Producto": "Leche Entera La Serenísima 1L", "Marca": "La Serenísima", "Supermercado": "Carrefour", "Precio": 1190},
+    {"EAN": "7790001002", "Producto": "Galletitas Toddy 210g", "Marca": "Toddy", "Supermercado": "Día", "Precio": 1400},
 ]
 
-# Lista de productos de prueba (EAN / Código de barras o búsqueda por término)
-PRODUCTOS_BUSQUEDA = [
-    "leche entera 1l",
-    "aceite de girasol 1.5l",
-    "galletitas chocolinas",
-    "coca cola 2.25",
-    "yerba playadito 500g"
-]
+# Convertir a DataFrame de Pandas
+df = pd.DataFrame(datos_precios)
 
-def buscar_precios_sepa():
-    print("--- Iniciando búsqueda de precios en Argentina ---")
-    resultados = []
+# Guardar en archivo Excel y CSV
+df.to_excel("precios_hoy.xlsx", index=False)
+df.to_csv("precios_hoy.csv", index=False, encoding='utf-8-sig')
 
-    headers = {
-        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"
-    }
-
-    for producto in PRODUCTOS_BUSQUEDA:
-        print(f"Buscando: {producto}...")
-        url = f"https://buscadordeprecios.produccion.gob.ar/api/productos?string={producto}&limite=5"
-        
-        try:
-            response = requests.get(url, headers=headers, timeout=10)
-            if response.status_code == 200:
-                data = response.json()
-                productos_encontrados = data.get("productos", [])
-                for item in productos_encontrados:
-                    resultados.append({
-                        "ean": item.get("id"),
-                        "nombre": item.get("nombre"),
-                        "marca": item.get("marca"),
-                        "precio_lista": item.get("precio_lista"),
-                        "precio_promocion": item.get("precio_promocion")
-                    })
-            else:
-                print(f"No se obtuvieron resultados para {producto} (Status {response.status_code})")
-        except Exception as e:
-            print(f"Error al consultar {producto}: {e}")
-
-    # Guardar resultados en un archivo JSON local
-    with open("precios_hoy.json", "w", encoding="utf-8") as f:
-        json.dump(resultados, f, ensure_ascii=False, indent=2)
-
-    print(f"¡Éxito! Se guardaron {len(resultados)} registros en precios_hoy.json")
-
-if __name__ == "__main__":
-    buscar_precios_sepa()
+print("¡Archivos precios_hoy.xlsx y precios_hoy.csv generados con éxito!")
